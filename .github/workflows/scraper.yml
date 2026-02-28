@@ -3,7 +3,7 @@ name: Diagonal Trakt Scraper
 on:
   schedule:
     # Tourne tous les jours à 8h00 UTC (9h ou 10h en France)
-    - cron: '0 8 * * *'
+    - cron: '0 8 * * 3'
   workflow_dispatch: # Permet aussi de lancer le script manuellement depuis GitHub !
 
 jobs:
@@ -26,4 +26,4 @@ jobs:
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
           TRAKT_ACCESS_TOKEN: ${{ secrets.TRAKT_ACCESS_TOKEN }}
-        run: python scraper.py # Change ce nom si ton script s'appelle autrement
+        run: python diagonal-scraper.py # Change ce nom si ton script s'appelle autrement
