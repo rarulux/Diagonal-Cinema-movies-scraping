@@ -17,7 +17,7 @@ HEADERS = {
 }
 
 def get_diagonal_movies():
-    url = "https://www.cinediagonal.com/seances/"
+    url = "https://www.cinediagonal.com/a-laffiche/"
     try:
         res = requests.get(url, timeout=10)
         res.raise_for_status()
