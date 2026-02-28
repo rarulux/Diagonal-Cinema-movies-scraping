@@ -17,27 +17,32 @@ HEADERS = {
 }
 
 def get_diagonal_movies():
-    url = "https://www.cinediagonal.com/a-laffiche/"
+    # L'URL secrète que tu as trouvée !
+    api_url = "https://www.cinediagonal.com/api/gatsby-source-boxofficeapi/movies?basic=false&castingLimit=3&ids=1000001960&ids=1000004467&ids=1000006454&ids=1000007317&ids=1000012006&ids=1000012017&ids=1000014092&ids=1000015619&ids=1000017997&ids=1000019745&ids=1000019912&ids=1000020088&ids=1000020167&ids=1000023006&ids=1000028071&ids=1000030340&ids=1000031821&ids=11674&ids=297924&ids=298832&ids=314229&ids=321789&ids=323925&ids=325655"
     
-    # Notre déguisement pour passer pour un vrai navigateur
     web_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/114.0.0.0'
     }
     
     try:
-        res = requests.get(url, headers=web_headers, timeout=10)
+        print("🕵️‍♂️ Connexion à l'API secrète du Diagonal...")
+        res = requests.get(api_url, headers=web_headers, timeout=10)
         res.raise_for_status()
-        soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Le nouveau viseur : on prend juste le texte de tous les h2
-        titles = [tag.get_text(strip=True) for tag in soup.select('h2')]
+        # La magie de l'API : on transforme directement le résultat en dictionnaire Python
+        movies_data = res.json()
         
-        # On nettoie la liste (on enlève les potentiels h2 vides)
-        clean_titles = [t for t in titles if t]
-        return list(set(clean_titles))
+        titles = []
+        for movie in movies_data:
+            # Dans cette API, le titre du film se trouve sous l'étiquette 'title'
+            titre = movie.get('title')
+            if titre:
+                titles.append(titre)
+        
+        return list(set(titles))
         
     except Exception as e:
-        print(f"Erreur lors du scraping du site: {e}")
+        print(f"❌ Erreur API: {e}")
         return []
 def search_trakt_id(title):
     url = "https://api.trakt.tv/search/movie"
