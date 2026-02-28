@@ -19,7 +19,7 @@ HEADERS = {
 def get_diagonal_movies():
     url = "https://www.cinediagonal.com/a-laffiche/"
     
-    # On ajoute un "déguisement" (User-Agent) pour faire croire qu'on est un vrai navigateur
+    # Notre déguisement pour passer pour un vrai navigateur
     web_headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
     }
@@ -29,13 +29,16 @@ def get_diagonal_movies():
         res.raise_for_status()
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # C'est ici qu'on va devoir ajuster le 'h2 a'
-        titles = [tag.get_text(strip=True) for tag in soup.select('h2 a')]
-        return list(set(titles))
+        # Le nouveau viseur : on prend juste le texte de tous les h2
+        titles = [tag.get_text(strip=True) for tag in soup.select('h2')]
+        
+        # On nettoie la liste (on enlève les potentiels h2 vides)
+        clean_titles = [t for t in titles if t]
+        return list(set(clean_titles))
+        
     except Exception as e:
         print(f"Erreur lors du scraping du site: {e}")
         return []
-
 def search_trakt_id(title):
     url = "https://api.trakt.tv/search/movie"
     # L'utilisation de 'params' gère automatiquement les espaces et caractères spéciaux
