@@ -17,50 +17,27 @@ HEADERS = {
 }
 
 def get_diagonal_movies():
-    # 1. On va d'abord sur la page d'accueil pour espionner les IDs de la semaine
-    base_url = "https://www.cinediagonal.com/a-laffiche/"
+    # On utilise le lien complet que tu as trouvé dans l'onglet Network
+    # C'est la méthode la plus sûre car l'API répond directement les noms
+    api_url = "https://www.cinediagonal.com/api/gatsby-source-boxofficeapi/movies?basic=false&castingLimit=3&ids=1000001960&ids=1000004467&ids=1000006454&ids=1000007317&ids=1000012006&ids=1000012017&ids=1000014092&ids=1000015619&ids=1000017997&ids=1000019745&ids=1000019912&ids=1000020088&ids=1000020167&ids=1000023006&ids=1000028071&ids=1000030340&ids=1000031821&ids=11674&ids=297924&ids=298832&ids=314229&ids=321789&ids=323925&ids=325655"
+    
     web_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/114.0.0.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
     }
     
     try:
-        print("🔍 Recherche des films de la semaine sur le site...")
-        res_html = requests.get(base_url, headers=web_headers, timeout=10)
-        res_html.raise_for_status()
+        print("🕵️‍♂️ Récupération des films via l'API directe...")
+        res = requests.get(api_url, headers=web_headers, timeout=10)
+        res.raise_for_status()
         
-        # Le scanner magique : il trouve tous les "ids=123456" dans le code caché
-        ids_trouves = re.findall(r'ids=(\d+)', res_html.text)
+        movies_data = res.json()
+        titles = [movie.get('title') for movie in movies_data if movie.get('title')]
         
-        # On enlève les doublons au cas où un film apparaîtrait deux fois
-        ids_uniques = list(set(ids_trouves))
-        
-        if not ids_uniques:
-            print("⚠️ Aucun ID trouvé cette semaine.")
-            return []
-            
-        print(f"✅ {len(ids_uniques)} IDs trouvés ! Construction de l'URL secrète...")
-        
-        # 2. On fabrique notre lien API sur-mesure pour cette semaine
-        api_url = "https://www.cinediagonal.com/api/gatsby-source-boxofficeapi/movies?basic=false&castingLimit=3"
-        for movie_id in ids_uniques:
-            api_url += f"&ids={movie_id}"
-            
-        # 3. On interroge enfin l'API avec notre beau lien tout neuf !
-        print("🕵️‍♂️ Récupération des vrais titres via l'API...")
-        res_api = requests.get(api_url, headers=web_headers, timeout=10)
-        res_api.raise_for_status()
-        movies_data = res_api.json()
-        
-        titles = []
-        for movie in movies_data:
-            titre = movie.get('title')
-            if titre:
-                titles.append(titre)
-        
+        print(f"✅ {len(titles)} films récupérés !")
         return list(set(titles))
         
     except Exception as e:
-        print(f"❌ Erreur globale: {e}")
+        print(f"❌ Erreur: {e}")
         return []
 def search_trakt_id(title):
     url = "https://api.trakt.tv/search/movie"
