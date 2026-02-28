@@ -18,12 +18,18 @@ HEADERS = {
 
 def get_diagonal_movies():
     url = "https://www.cinediagonal.com/a-laffiche/"
+    
+    # On ajoute un "déguisement" (User-Agent) pour faire croire qu'on est un vrai navigateur
+    web_headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+    }
+    
     try:
-        res = requests.get(url, timeout=10)
+        res = requests.get(url, headers=web_headers, timeout=10)
         res.raise_for_status()
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Extraction des titres (sélecteur à ajuster si le site change)
+        # C'est ici qu'on va devoir ajuster le 'h2 a'
         titles = [tag.get_text(strip=True) for tag in soup.select('h2 a')]
         return list(set(titles))
     except Exception as e:
