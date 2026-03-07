@@ -2,8 +2,8 @@ name: Diagonal Trakt Scraper
 
 on:
   schedule:
-    # Tourne tous les jours à 8h00 UTC (9h ou 10h en France)
-    - cron: '0 8 * * 3'
+    # Tourne le jeudi à 8h00 UTC (9h ou 10h en France)
+    - cron: '0 8 * * 4'
   workflow_dispatch: # Permet aussi de lancer le script manuellement depuis GitHub !
 
 jobs:
