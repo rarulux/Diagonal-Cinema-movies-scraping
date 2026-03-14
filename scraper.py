@@ -67,51 +67,42 @@ def fetch_movie_details(movie_ids: list[str]) -> list[dict]:
 # ─── 3. Recherche TMDb ─────────────────────────────────────────────────────────
 
 def search_tmdb(film: dict) -> dict | None:
-    """
-    Stratégie en 3 étapes :
-    1. Recherche par ID Allocine (le plus fiable)
-    2. Recherche par titre français + année
-    3. Recherche par titre original + année
-    """
-
-    # Étape 1 : via ID Allocine → find endpoint TMDb
-    if film["allocine_id"]:
-        url = f"https://api.themoviedb.org/3/find/{film['allocine_id']}"
-        params = {"api_key": TMDB_API_KEY, "external_source": "allocine_id"}
-        try:
-            r = SESSION.get(url, params=params, timeout=10)
-            r.raise_for_status()
-            results = r.json().get("movie_results", [])
-            if results:
-                best = results[0]
-                print(f"    TMDb (Allocine) → '{best['title']}' id={best['id']}")
-                return {"tmdb_id": best["id"], "title": best["title"]}
-        except Exception as e:
-            print(f"    [WARN] Allocine lookup échoué : {e}")
-
-    # Étape 2 & 3 : recherche par titre
+    # Étape 1 : via ID Allocine (external_source correct pour TMDb = "allocine_id" ne marche pas)
+    # On utilise plutôt la recherche titre + année stricte
     search_url = "https://api.themoviedb.org/3/search/movie"
-    for query, yr in [
-        (film["title"],          film["year"]),
-        (film["title"],          ""),
-        (film["original_title"], film["year"]),
-        (film["original_title"], ""),
-    ]:
-        if not query:
-            continue
+
+    def _search(query: str, yr: str = "") -> list:
         params = {"api_key": TMDB_API_KEY, "query": query, "language": "fr-FR"}
         if yr:
             params["primary_release_year"] = yr
         r = SESSION.get(search_url, params=params, timeout=10)
-        results = r.json().get("results", [])
-        if results:
-            best = results[0]
-            print(f"    TMDb (titre) → '{best['title']}' id={best['id']}")
-            return {"tmdb_id": best["id"], "title": best["title"]}
+        return r.json().get("results", [])
+
+    def _best_match(results: list, expected_year: str) -> dict | None:
+        """Retourne le premier résultat dont l'année correspond, sinon None."""
+        for r in results:
+            result_year = r.get("release_date", "")[:4]
+            if not expected_year or result_year == expected_year:
+                return r
+        return None
+
+    # Tentatives dans l'ordre, avec vérification d'année stricte
+    for query, yr in [
+        (film["title"],          film["year"]),
+        (film["original_title"], film["year"]),
+        (film["title"],          ""),           # fallback sans année
+        (film["original_title"], ""),
+    ]:
+        if not query:
+            continue
+        results = _search(query, yr)
+        match = _best_match(results, film["year"])
+        if match:
+            print(f"    TMDb → '{match['title']}' ({match.get('release_date','')[:4]}) id={match['id']}")
+            return {"tmdb_id": match["id"], "title": match["title"]}
 
     print(f"    [WARN] Non trouvé sur TMDb : '{film['title']}'")
     return None
-
 
 # ─── 4. TMDb ID → objet Trakt ──────────────────────────────────────────────────
 
