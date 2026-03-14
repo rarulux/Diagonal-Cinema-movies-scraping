@@ -18,11 +18,10 @@ jobs:
           python-version: '3.10'
 
       - name: Installation des dépendances
-        run: pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt  # ← python -m pip
 
       - name: Installation de Playwright + Chromium
-        run: python -m playwright install chromium --with-deps  # ← python -m playwright
-
+        run: python -m playwright install chromium --with-deps
       - name: Lancement du script
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
