@@ -1,10 +1,9 @@
-name: Diagonal → Trakt Sync
+name: Diagonal → TMDb Sync
 
 on:
   schedule:
-    - cron: "0 17 * * 4"   # Jeudi 17h UTC = 18h Paris (heure d'été)
-    # Si tu veux couvrir l'heure d'hiver aussi (UTC+1), utilise 17h UTC
-  workflow_dispatch:         # Lancement manuel depuis GitHub si besoin
+    - cron: "0 17 * * 4"  # Jeudi 18h Paris (heure d'été) / 18h hiver = "0 17 * * 4"
+  workflow_dispatch:        # Lancement manuel depuis GitHub
 
 jobs:
   sync:
@@ -25,8 +24,7 @@ jobs:
       - name: Run scraper
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
-          TRAKT_ACCESS_TOKEN: ${{ secrets.TRAKT_ACCESS_TOKEN }}
-          TRAKT_USERNAME: ${{ secrets.TRAKT_USERNAME }}
-          TRAKT_LIST_SLUG: ${{ secrets.TRAKT_LIST_SLUG }}
+          TMDB_LIST_ID: ${{ secrets.TMDB_LIST_ID }}
+          TMDB_USERNAME: ${{ secrets.TMDB_USERNAME }}
+          TMDB_PASSWORD: ${{ secrets.TMDB_PASSWORD }}
         run: python scraper.py
