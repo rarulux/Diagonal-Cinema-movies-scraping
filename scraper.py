@@ -134,14 +134,23 @@ def get_tmdb_session_token() -> str:
 # ─── 5. Gestion de la liste TMDb ───────────────────────────────────────────────
 
 def get_tmdb_list_ids(session_id: str) -> set[int]:
-    """Retourne les TMDb IDs déjà dans la liste."""
-    r = SESSION.get(
-        f"https://api.themoviedb.org/3/list/{TMDB_LIST_ID}",
-        params={"api_key": TMDB_API_KEY},
-        timeout=10,
-    )
-    items = r.json().get("items", [])
-    return {item["id"] for item in items}
+    """Retourne les TMDb IDs déjà dans la liste (toutes pages)."""
+    ids = set()
+    page = 1
+    while True:
+        r = SESSION.get(
+            f"https://api.themoviedb.org/3/list/{TMDB_LIST_ID}",
+            params={"api_key": TMDB_API_KEY, "page": page},
+            timeout=10,
+        )
+        data = r.json()
+        for item in data.get("items", []):
+            ids.add(item["id"])
+        if page >= data.get("total_pages", 1):
+            break
+        page += 1
+    print(f"    [*] {len(ids)} films détectés dans la liste (sur {page} page(s))")
+    return ids
 
 
 def add_to_tmdb_list(session_id: str, tmdb_ids: list[int]):
