@@ -160,6 +160,7 @@ def add_to_tmdb_list(session_id: str, tmdb_ids: list[int]):
     added = 0
     for tmdb_id in to_add:
         r = SESSION.post(url, params=params, json={"media_id": tmdb_id}, timeout=10)
+        print(f"    [{tmdb_id}] HTTP {r.status_code} — {r.json()}")  # ← log détaillé
         if r.status_code in (200, 201):
             added += 1
         time.sleep(0.2)
